@@ -27,7 +27,12 @@ class ProductsService:
     @rpc
     def list(self):
         products = self.storage.list()
-        return schemas.Product(many=True).dump(products).data
+        
+        products = schemas.Product(many=True).dump(products).data
+        if not products:
+            raise NotFound('Any products was found')
+        
+        return products
 
     @rpc
     def create(self, product):
