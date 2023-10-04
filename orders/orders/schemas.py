@@ -11,3 +11,6 @@ class OrderDetailSchema(Schema):
 class OrderSchema(Schema):
     id = fields.Int(required=True)
     order_details = fields.Nested(OrderDetailSchema, many=True)
+
+class OrdersSchema(Schema):
+    orders = fields.Nested(OrderSchema, many=True)

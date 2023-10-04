@@ -26,12 +26,23 @@ class GatewayService(object):
         expected_exceptions=ProductNotFound
     )
     def get_product(self, request, product_id):
-        """Gets product by `product_id`
-        """
-        product = self.products_rpc.get(product_id)
+        """ Gets product by `product_id` """
+        product = self.__get_product(product_id)
         return Response(
             ProductSchema().dumps(product).data,
-            mimetype='application/json'
+            mimetype='application/json',
+        )
+    
+    @http(
+        "GET", "/products",
+        expected_exceptions=ProductNotFound
+    )
+    def get_all_products(self):
+        """ Gets all products """
+        product = self.__get_product()
+        return Response(
+            ProductSchema().dumps(product).data,
+            mimetype='application/json',
         )
 
     @http(
@@ -71,8 +82,25 @@ class GatewayService(object):
         # Create the product
         self.products_rpc.create(product_data)
         return Response(
-            json.dumps({'id': product_data['id']}), mimetype='application/json'
+            json.dumps({'id': product_data['id']}), mimetype='application/json', status=201
         )
+
+    @http("DELETE", "/products/<string:product_id>",
+          expected_exceptions=ProductNotFound)
+    def delete_product(self, request, product_id):
+        """
+            Deletes the product by `product_id`.
+        """
+        self.products_rpc.remove(product_id)
+        return Response(
+            mimetype='application/json', status=204
+        )
+
+    def __get_product(self, product_id):
+        product = self.products_rpc.get(product_id)
+        return product
+
+
 
     @http("GET", "/orders/<int:order_id>", expected_exceptions=OrderNotFound)
     def get_order(self, request, order_id):
@@ -93,6 +121,24 @@ class GatewayService(object):
         # raise``OrderNotFound``
         order = self.orders_rpc.get_order(order_id)
 
+        order = self.__format_order(order)
+
+        return order
+
+    @http("GET", "/orders", expected_exceptions=OrderNotFound)
+    def get_all_orders(self, request):
+        """Get all orders.
+        """
+        orders = self.orders_rpc.list_all_orders()
+        for order in orders:
+            order = self.__format_order(order)
+
+        return Response(
+            json.dumps(orders),
+            mimetype='application/json'
+        )
+    
+    def __format_order(self, order):
         # Retrieve all products from the products service
         product_map = {prod['id']: prod for prod in self.products_rpc.list()}
 
@@ -106,7 +152,6 @@ class GatewayService(object):
             item['product'] = product_map[product_id]
             # Construct an image url.
             item['image'] = '{}/{}.jpg'.format(image_root, product_id)
-
         return order
 
     @http(
@@ -153,7 +198,7 @@ class GatewayService(object):
         # Create the order
         # Note - this may raise `ProductNotFound`
         id_ = self._create_order(order_data)
-        return Response(json.dumps({'id': id_}), mimetype='application/json')
+        return Response(json.dumps({'id': id_}), mimetype='application/json', status=201)
 
     def _create_order(self, order_data):
         # check order product ids are valid
@@ -172,3 +217,13 @@ class GatewayService(object):
             serialized_data['order_details']
         )
         return result['id']
+
+    @http("DELETE", "/orders/<int:order_id>", expected_exceptions=(OrderNotFound))
+    def remove_order(self, request, order_id):
+        """
+        Remove order by `order_id`
+        """
+        self.orders_rpc.delete_order(order_id)
+        return Response(
+            mimetype='application/json', status=204
+        )
