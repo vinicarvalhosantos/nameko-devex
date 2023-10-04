@@ -39,7 +39,7 @@ class GatewayService(object):
     )
     def get_all_products(self, request):
         """ Gets all products """
-        product = self.products_rpc.list()
+        product = self.products_rpc.get_all_products()
 
         return Response(
             json.dumps(product),

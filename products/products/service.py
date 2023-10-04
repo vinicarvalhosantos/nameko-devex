@@ -27,8 +27,12 @@ class ProductsService:
     @rpc
     def list(self):
         products = self.storage.list()
-        
-        products = schemas.Product(many=True).dump(products).data
+
+        return schemas.Product(many=True).dump(products).data
+    
+    @rpc
+    def get_all_products(self):
+        products = self.list()
         if not products:
             raise NotFound('Any products was found')
         
