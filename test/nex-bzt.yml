@@ -22,7 +22,7 @@ scenarios:
     # 1. Create Product
     - url: /products
       label: products-create
-      think-time: uniform(0s, 0s)
+      think-time: uniform(0.150s, 0.150s)
       method: POST
       headers:
         cache-control: no-cache
@@ -38,7 +38,7 @@ scenarios:
         }          
       assert:
       - contains:
-        - 200
+        - 201
         subject: http-code
         not: false
       extract-jsonpath:
@@ -52,7 +52,7 @@ scenarios:
     # 2. Get Product
     - url: /products/${product_id}
       label: product-get
-      think-time: uniform(0s, 0s)
+      think-time: uniform(0.150s, 0.150s)
       method: GET
         
       assert:
@@ -60,14 +60,23 @@ scenarios:
         - 200
         subject: http-code
         not: false
-      extract-jsonpath:
-        product_key: $.id
-        default: NOT_FOUND
 
-    # 3. Create Orders
+    # 3. Get All Products
+    - url: /products
+      label: product-get-all
+      think-time: uniform(0.150s, 0.150s)
+      method: GET
+        
+      assert:
+      - contains:
+        - 200
+        subject: http-code
+        not: false
+
+    # 4. Create Orders
     - url: /orders
       label: orders-create
-      think-time: uniform(0s, 0s)
+      think-time: uniform(0.150s, 0.150s)
       method: POST
       headers:
         cache-control: no-cache
@@ -79,7 +88,7 @@ scenarios:
         }
       assert:
       - contains:
-        - 200
+        - 201
         subject: http-code
         not: false
       extract-jsonpath:
@@ -90,10 +99,10 @@ scenarios:
       then:
         - action: continue
   
-    # 4. Get Orders
+    # 5. Get Orders
     - url: /orders/${order_id}
       label: order-get
-      think-time: uniform(0s, 0s)
+      think-time: uniform(0.150s, 0.150s)
       method: GET
         
       assert:
@@ -101,14 +110,48 @@ scenarios:
         - 200
         subject: http-code
         not: false
-      extract-jsonpath:
-        order_id: $.id
-        default: NOT_FOUND
         
     - if: '"${order_id}" == "NOT_FOUND"'
       then:
         - action: continue
+
+    # 6. Get All Orders
+    - url: /orders
+      label: order-get-all
+      think-time: uniform(0.150s, 0.150s)
+      method: GET
+        
+      assert:
+      - contains:
+        - 200
+        subject: http-code
+        not: false
   
+    # 7. Delete Order
+    - url: /orders/${order_id}
+      label: order-delete
+      think-time: uniform(0.200s, 0.150s)
+      method: DELETE
+        
+      assert:
+      - contains:
+        - 204
+        subject: http-code
+        not: false
+
+    # 8. Delete Product
+    - url: /products/${product_id}
+      label: product-delete
+      think-time: uniform(0.200s, 0.150s)
+      method: DELETE
+        
+      assert:
+      - contains:
+        - 204
+        subject: http-code
+        not: false
+  
+
 reporting:
 - module: final-stats
   dump-xml: stats.xml
