@@ -21,7 +21,7 @@ class ProductsService:
         product = self.storage.get(product_id)
         if not product:
             raise NotFound('Product with id {} not found'.format(product_id))
-        
+
         return schemas.Product().dump(product).data
 
     @rpc
@@ -45,12 +45,11 @@ class ProductsService:
 
     @rpc
     def remove(self, product_id):
-        product = self.get(product_id)
-        product = schemas.Product(strict=True).load(product).data
+        product = self.storage.get(product_id)
         if not product:
             raise NotFound('Product with id {} not found'.format(product_id))
-            
-        self.storage.delete(product_id)
+
+        self.storage.delete(product['id'])
 
     @event_handler('orders', 'order_created')
     def handle_order_created(self, payload):

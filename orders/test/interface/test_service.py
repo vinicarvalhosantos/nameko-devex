@@ -40,6 +40,30 @@ def test_will_raise_when_order_not_found(orders_rpc):
         orders_rpc.get_order(1)
     assert err.value.value == 'Order with id 1 not found'
 
+def test_get_all_orders(orders_rpc, order):
+    order_details = [
+        {
+            'product_id': "the_odyssey",
+            'price': 99.99,
+            'quantity': 1
+        },
+        {
+            'product_id': "the_enigma",
+            'price': 5.99,
+            'quantity': 8
+        }
+    ]
+    orders_rpc.create_order(
+        OrderDetailSchema(many=True).dump(order_details).data
+    )
+    response = orders_rpc.list_all_orders()
+    assert len(response) == 2
+
+@pytest.mark.usefixtures('db_session')
+def test_will_raise_when_orders_not_found(orders_rpc):
+    with pytest.raises(RemoteError) as err:
+        orders_rpc.list_all_orders()
+    assert err.value.value == 'Any orders was found'
 
 @pytest.mark.usefixtures('db_session')
 def test_can_create_order(orders_service, orders_rpc):
@@ -91,6 +115,27 @@ def test_can_update_order(orders_rpc, order):
     assert updated_order['order_details'] == order_payload['order_details']
 
 
-def test_can_delete_order(orders_rpc, order, db_session):
-    orders_rpc.delete_order(order.id)
-    assert not db_session.query(Order).filter_by(id=order.id).count()
+def test_can_delete_order(orders_rpc, db_session):
+    order_details = [
+        {
+            'product_id': "the_odyssey",
+            'price': 99.99,
+            'quantity': 1
+        },
+        {
+            'product_id': "the_enigma",
+            'price': 5.99,
+            'quantity': 8
+        }
+    ]
+    new_order = orders_rpc.create_order(
+        OrderDetailSchema(many=True).dump(order_details).data
+    )
+    orders_rpc.delete_order(new_order["id"])
+    assert not db_session.query(Order).filter_by(id=new_order["id"]).count()
+
+@pytest.mark.usefixtures('db_session')
+def test_will_raise_when_delete_order_was_not_found(orders_rpc):
+    with pytest.raises(RemoteError) as err:
+        orders_rpc.delete_order(10)
+    assert err.value.value == 'Order with id 10 not found'
