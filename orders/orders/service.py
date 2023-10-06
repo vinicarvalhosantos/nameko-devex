@@ -4,7 +4,7 @@ from nameko_sqlalchemy import DatabaseSession
 
 from orders.exceptions import NotFound
 from orders.models import DeclarativeBase, Order, OrderDetail
-from orders.schemas import OrderSchema, OrdersSchema
+from orders.schemas import OrderSchema
 
 
 class OrdersService:
