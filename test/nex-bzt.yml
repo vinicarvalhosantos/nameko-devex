@@ -22,7 +22,7 @@ scenarios:
     # 1. Create Product
     - url: /products
       label: products-create
-      think-time: uniform(0.150s, 0.150s)
+      think-time: uniform(0s, 0s)
       method: POST
       headers:
         cache-control: no-cache
@@ -30,7 +30,7 @@ scenarios:
       body: 'request-body-string'
       body: >
         {
-          "id": "${id}-${__javaScript(Math.random())}",
+          "id": "${id}",
           "title": "${title}",
           "passenger_capacity": ${passenger_capacity},
           "maximum_speed": ${maximum_speed},
@@ -52,7 +52,7 @@ scenarios:
     # 2. Get Product
     - url: /products/${product_id}
       label: product-get
-      think-time: uniform(0.150s, 0.150s)
+      think-time: uniform(0s, 0s)
       method: GET
         
       assert:
@@ -64,7 +64,7 @@ scenarios:
     # 3. Get All Products
     - url: /products
       label: product-get-all
-      think-time: uniform(0.150s, 0.150s)
+      think-time: uniform(0s, 0s)
       method: GET
         
       assert:
@@ -76,7 +76,7 @@ scenarios:
     # 4. Create Orders
     - url: /orders
       label: orders-create
-      think-time: uniform(0.150s, 0.150s)
+      think-time: uniform(0s, 0s)
       method: POST
       headers:
         cache-control: no-cache
@@ -102,7 +102,7 @@ scenarios:
     # 5. Get Orders
     - url: /orders/${order_id}
       label: order-get
-      think-time: uniform(0.150s, 0.150s)
+      think-time: uniform(0s, 0s)
       method: GET
         
       assert:
@@ -118,7 +118,7 @@ scenarios:
     # 6. Get All Orders
     - url: /orders
       label: order-get-all
-      think-time: uniform(0.150s, 0.150s)
+      think-time: uniform(0s, 0s)
       method: GET
         
       assert:

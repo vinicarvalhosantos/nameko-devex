@@ -140,9 +140,6 @@ class GatewayService(object):
         )
     
     def __format_order(self, order):
-        # Retrieve all products from the products service
-        product_map = {prod['id']: prod for prod in self.products_rpc.list()}
-
         # get the configured image root
         image_root = config['PRODUCT_IMAGE_ROOT']
 
@@ -150,18 +147,14 @@ class GatewayService(object):
         for item in order['order_details']:
             product_id = item['product_id']
             
-            item['product'] = product_map[product_id]
-            
             # Construct an image url.
             item['image'] = '{}/{}.jpg'.format(image_root, product_id)
         return order
     
-    def __check_product_stock(self, product_id):
-        product_map = {prod['id']: prod for prod in self.products_rpc.list()}
-        product = product_map[product_id]
+    def __check_product_stock(self, product, order_quantity):
         product_stock = product['in_stock']
-        if product_stock == 0:
-            raise ProductNotFound('No stock for this product id \'{}\''.format(product_id))
+        if product_stock == 0 or order_quantity > product_stock:
+            raise ProductNotFound('No available stock for this product id \'{}\''.format(product['id']))
 
     @http(
         "POST", "/orders",
@@ -211,13 +204,20 @@ class GatewayService(object):
 
     def _create_order(self, order_data):
         # check order product ids are valid
-        valid_product_ids = {prod['id'] for prod in self.products_rpc.list()}
+        products_list = self.products_rpc.list()
+        valid_product_ids = []
+        product = {}
+
+        for product_temp in products_list:
+            valid_product_ids.append(product_temp['id'])
+            product[product_temp['id']] = product_temp
+
         for item in order_data['order_details']:
             product_id = item['product_id']
             if product_id not in valid_product_ids:
                 raise ProductNotFound("Product Id {}".format(product_id))
             
-            self.__check_product_stock(product_id)
+            self.__check_product_stock(product[product_id], item['quantity'])
 
         # Call orders-service to create the order.
         # Dump the data through the schema to ensure the values are serialized

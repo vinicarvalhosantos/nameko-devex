@@ -384,7 +384,7 @@ class TestCreateOrder(object):
         )
         assert response.status_code == 201
         assert response.json() == {'id': 11}
-        assert gateway_service.products_rpc.list.call_args_list == [call(), call()]
+        assert gateway_service.products_rpc.list.call_args_list == [call()]
         assert gateway_service.orders_rpc.create_order.call_args_list == [
             call([
                 {'product_id': 'the_odyssey', 'quantity': 3, 'price': '41.00'}
@@ -493,7 +493,7 @@ class TestCreateOrder(object):
         )
         assert response.status_code == 404
         assert response.json()['error'] == 'PRODUCT_NOT_FOUND'
-        assert response.json()['message'] == 'No stock for this product id \'the_enigma\''
+        assert response.json()['message'] == 'No available stock for this product id \'the_enigma\''
 
 class TestDeleteOrder(object):
 
