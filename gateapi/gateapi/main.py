@@ -20,4 +20,4 @@ async def shutdown_event():
     destroy_nameko_pool()
 
 if __name__ == "__main__":
-    uvicorn.run("gateapi.main:app", host="0.0.0.0", port=3000, workers=config['WEB_CONCURRENCY'])
+    uvicorn.run("gateapi.main:app", host="0.0.0.0", port=config['PORT'], workers=config['WEB_CONCURRENCY'])
